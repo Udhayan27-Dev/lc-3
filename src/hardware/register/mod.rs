@@ -65,4 +65,20 @@ impl Registers {
             _ => panic!("Index out of bound"),
         }
     }
+
+    pub fn update_cond(&mut self,r:u16){
+        let val = self.get(r);
+
+        let flag = if val == 0 {
+            ConditionFlag::ZRO
+        }else if (val >> 15) == 1 {
+            ConditionFlag::NEG
+        }
+        else{
+            ConditionFlag::POS
+        };
+
+        self.update(9,flag as u16);
+    }
+    
 }
