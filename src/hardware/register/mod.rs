@@ -1,3 +1,5 @@
+const PC_START :u16 = 0x3000;
+
 pub struct Registers{
     pub r0:u16,
     pub r1:u16,
@@ -79,6 +81,6 @@ impl Registers {
         };
 
         self.update(9,flag as u16);
-    }
-    
+    }   
 }
+
