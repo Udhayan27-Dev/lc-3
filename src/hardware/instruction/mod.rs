@@ -32,7 +32,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         // Some(Opcode::JMP) => jmp(),
         // Some(Opcode::JSR) => jsr(),
         // Some(Opcode::LD) => ld(),
-        // Some(Opcode::LDI) => ldi(),
+        Some(Opcode::LDI) => ldi(instr,vm),
         // Some(Opcode::LDR) => ldr(),
         // Some(Opcode::LEA) => lea(),
         // Some(Opcode::ST) => st(),
@@ -93,6 +93,21 @@ pub fn add(instr:u16,vm:&mut VM){
     }
     vm.registers.update_cond(dr);
 } 
+
+///  "LDI" opcode
+///  15           12 11        9 8                                 0
+/// ┌───────────────┬───────────┬───────────────────────────────────┐
+/// │      1010     │     DR    │               PCOffset9           │
+/// └───────────────┴───────────┴───────────────────────────────────┘
+
+pub fn ldi(instr:u16,vm:&mut VM){
+    let dr = (instr >> 9) & 0x7;
+    let pc_off = sign_extend(instr & 0x1ff, 9);
+    let first_read = vm.read_mem(vm.registers.pc + pc_off);
+    let res = vm.read_mem(first_read);
+    vm.registers.update(dr, res);
+    vm.registers.update_cond(dr);
+}
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
     if(x >> (bit_count-1)) & 1 != 0 {
