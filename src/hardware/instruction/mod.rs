@@ -26,8 +26,8 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
 
     match op_code {
         Some(Opcode::ADD) => add(instr, vm),
-        Some(Opcode::AND) => and(instr,vm),
-        // Some(Opcode::NOT) => not(),
+        Some(Opcode::AND) => and(instr, vm),
+        Some(Opcode::NOT) => not(instr, vm),
         // Some(Opcode::BR) => br(),
         // Some(Opcode::JMP) => jmp(),
         // Some(Opcode::JSR) => jsr(),
@@ -134,6 +134,18 @@ pub fn and(instr: u16,vm: &mut VM){
         vm.registers.update(dr, vm.registers.get(sr1) & vm.registers.get(sr2));
     }
     vm.registers.update_cond(dr);
+}
+
+/// 15           12 │11        9│8         6│ 5 │4                 0
+/// ┌───────────────┼───────────┼───────────┼───┼───────────────────┐
+/// │      1001     │     DR    │     SR    │ 1 │       1111        │
+/// └───────────────┴───────────┴───────────┴───┴───────────────────┘
+pub fn not(instr: u16,vm:&mut VM){
+    let dr = (instr >> 9) & 0x7;
+    let sr1 = (instr >> 6) & 0x7;
+    vm.registers.update(dr, !vm.registers.get(sr1));
+    vm.registers.update_cond(dr);
+}
 
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
