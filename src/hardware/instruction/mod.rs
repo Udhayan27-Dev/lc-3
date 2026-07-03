@@ -28,7 +28,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::ADD) => add(instr, vm),
         Some(Opcode::AND) => and(instr, vm),
         Some(Opcode::NOT) => not(instr, vm),
-        // Some(Opcode::BR) => br(),
+        Some(Opcode::BR) => br(instr,vm),
         // Some(Opcode::JMP) => jmp(),
         // Some(Opcode::JSR) => jsr(),
         // Some(Opcode::LD) => ld(),
@@ -145,6 +145,20 @@ pub fn not(instr: u16,vm:&mut VM){
     let sr1 = (instr >> 6) & 0x7;
     vm.registers.update(dr, !vm.registers.get(sr1));
     vm.registers.update_cond(dr);
+}
+
+/// BRANCH opcode (br is used conditional branching)
+/// 15           12 │11 │10 │ 9 │8                                 0
+/// ┌───────────────┼───┼───┼───┼───────────────────────────────────┐
+/// │      0000     │ N │ Z │ P │             PCOffset9             │
+/// └───────────────┴───┴───┴───┴───────────────────────────────────┘
+pub fn br(instr:u16,vm:&mut VM){
+    let pc_off = sign_extend(instr & 0x1ff,9);
+    let cond_flag = instr >> 9 & 0x7;
+    if cond_flag & vm.registers.cond != 0 {
+        let val: u32= vm.registers.pc as u32 + pc_off as u32;
+        vm.registers.pc = val as u16;
+    }
 }
 
 

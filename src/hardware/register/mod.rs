@@ -15,9 +15,9 @@ pub struct Registers{
 
 enum ConditionFlag{
     //nzp = 000
-    POS = 1 << 0,
-    ZRO = 1 << 1,
-    NEG = 1 << 2,
+    POS = 1 << 0, //(001)
+    ZRO = 1 << 1, //(010)
+    NEG = 1 << 2, //(100)
 }
 
 impl Registers {
