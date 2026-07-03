@@ -30,7 +30,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::NOT) => not(instr, vm),
         Some(Opcode::BR) => br(instr,vm),
         Some(Opcode::JMP) => jmp(instr,vm),
-        // Some(Opcode::JSR) => jsr(),
+        Some(Opcode::JSR) => jsr(instr,vm),
         // Some(Opcode::LD) => ld(),
         Some(Opcode::LDI) => ldi(instr,vm),
         // Some(Opcode::LDR) => ldr(),
@@ -172,11 +172,37 @@ pub fn br(instr:u16,vm:&mut VM){
 /// ┌───────────────┼───────────┼───────────┼───────────────────────┐
 /// │      1100     │    000    │    111    │       00000           │
 /// └───────────────┴───────────┴───────────┴───────────────────────┘
+
 pub fn jmp(instr: u16,vm: &mut VM){
     let base = (instr >> 6) & 0x7;
     vm.registers.pc = vm.registers.get(base);
 }
 
+
+/// "JUMP to Subroutine or func" Opcode
+///  15           12│11 │10
+/// ┌───────────────┼───┼───────────────────────────────────────────┐
+/// │      0100     │ 1 │                PCOffset11                 │
+/// └───────────────┴───┴───────────────────────────────────────────┘
+///  15           12│11 │10    9│8     6│5                         0
+/// ┌───────────────┼───┼───────┼───────┼───────────────────────────┐
+/// │      0100     │ 0 │   00  │ BaseR │           00000           │
+/// └───────────────┴───┴───────┴───────┴───────────────────────────┘
+
+pub fn jsr(instr: u16,vm:&mut VM){
+    let base_reg = (instr >> 6) & 0x7;
+    let flag = (instr >> 11) &0x1;
+    let pc_off = sign_extend(instr & 0x7ff, 11);
+    vm.registers.r7 = vm.registers.pc;
+
+    if flag != 0{
+        let val:u32 = vm.registers.pc as u32+ pc_off as u32;
+        vm.registers.pc = val as u16;
+    }
+    else{
+        vm.registers.pc = vm.registers.get(base_reg);
+    }
+}
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
     if(x >> (bit_count-1)) & 1 != 0 {
