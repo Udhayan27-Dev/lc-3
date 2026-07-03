@@ -29,7 +29,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::AND) => and(instr, vm),
         Some(Opcode::NOT) => not(instr, vm),
         Some(Opcode::BR) => br(instr,vm),
-        // Some(Opcode::JMP) => jmp(),
+        Some(Opcode::JMP) => jmp(instr,vm),
         // Some(Opcode::JSR) => jsr(),
         // Some(Opcode::LD) => ld(),
         Some(Opcode::LDI) => ldi(instr,vm),
@@ -136,6 +136,7 @@ pub fn and(instr: u16,vm: &mut VM){
     vm.registers.update_cond(dr);
 }
 
+/// "NOT" opcode
 /// 15           12 │11        9│8         6│ 5 │4                 0
 /// ┌───────────────┼───────────┼───────────┼───┼───────────────────┐
 /// │      1001     │     DR    │     SR    │ 1 │       1111        │
@@ -147,7 +148,7 @@ pub fn not(instr: u16,vm:&mut VM){
     vm.registers.update_cond(dr);
 }
 
-/// BRANCH opcode (br is used conditional branching)
+/// "BRANCH" opcode (br is used conditional branching)
 /// 15           12 │11 │10 │ 9 │8                                 0
 /// ┌───────────────┼───┼───┼───┼───────────────────────────────────┐
 /// │      0000     │ N │ Z │ P │             PCOffset9             │
@@ -159,6 +160,21 @@ pub fn br(instr:u16,vm:&mut VM){
         let val: u32= vm.registers.pc as u32 + pc_off as u32;
         vm.registers.pc = val as u16;
     }
+}
+
+
+/// "JUMP" opcode (unconditional)
+///  15           12│11        9│8         6│ 5                    0
+/// ┌───────────────┼───────────┼───────────┼───────────────────────┐
+/// │      1100     │    000    │   BaseR   │       00000           │
+/// └───────────────┴───────────┴───────────┴───────────────────────┘
+///  15           12│11        9│8         6│ 5                    0
+/// ┌───────────────┼───────────┼───────────┼───────────────────────┐
+/// │      1100     │    000    │    111    │       00000           │
+/// └───────────────┴───────────┴───────────┴───────────────────────┘
+pub fn jmp(instr: u16,vm: &mut VM){
+    let base = (instr >> 6) & 0x7;
+    vm.registers.pc = vm.registers.get(base);
 }
 
 
