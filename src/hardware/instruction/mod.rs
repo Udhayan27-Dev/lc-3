@@ -31,7 +31,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::BR) => br(instr,vm),
         Some(Opcode::JMP) => jmp(instr,vm),
         Some(Opcode::JSR) => jsr(instr,vm),
-        // Some(Opcode::LD) => ld(),
+        Some(Opcode::LD) => ld(instr,vm),
         Some(Opcode::LDI) => ldi(instr,vm),
         // Some(Opcode::LDR) => ldr(),
         // Some(Opcode::LEA) => lea(),
@@ -203,6 +203,21 @@ pub fn jsr(instr: u16,vm:&mut VM){
         vm.registers.pc = vm.registers.get(base_reg);
     }
 }
+
+///"LOAD" Opcode
+///  15           12│11        9│8                                 0
+/// ┌───────────────┼───────────┼───────────────────────────────────┐
+/// │      0010     │     DR    │            PCOffset9              │
+/// └───────────────┴───────────┴───────────────────────────────────┘
+pub fn ld(instr:u16,vm:&mut VM){
+    let dr = (instr >> 9) & 0x7;
+    let pc_off = sign_extend(instr & 0x1ff,9);
+    let mem:u32 = pc_off as u32 + vm.registers.pc as u32;
+    let value = vm.read_mem(mem as u16);
+    vm.registers.update(dr, value);
+    vm.registers.update_cond(dr);
+}
+
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
     if(x >> (bit_count-1)) & 1 != 0 {
