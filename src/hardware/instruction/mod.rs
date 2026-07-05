@@ -36,8 +36,8 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::LDR) => ldr(instr,vm),
         Some(Opcode::LEA) => lea(instr,vm),
         Some(Opcode::ST) => st(instr,vm),
-        // Some(Opcode::STI) => sti(),
-        // Some(Opcode::STR) => str(),
+        Some(Opcode::STI) => sti(instr,vm),
+        Some(Opcode::STR) => str(instr,vm),
         // Some(Opcode::TRAP) => trap(),
         _ => {}
     }
@@ -275,6 +275,19 @@ pub fn sti(instr: u16,vm:&mut VM){
     
 }
 
+
+/// 
+///  15           12│11        9│8         6│                      0
+/// ┌───────────────┼───────────┼───────────┼───────────────────────┐
+/// │      0111     │     SR    │   BaseR   │        PCOffset6      │
+/// └───────────────┴───────────┴───────────┴───────────────────────┘
+pub fn str(instr:u16,vm: &mut VM){
+    let sr = (instr >> 9) & 0x7;
+    let base_r = (instr >> 6) & 0x7;
+    let pc_off = sign_extend(instr & 0x3f, 6);
+    let addr = vm.registers.get(base_r).wrapping_add(pc_off);
+    vm.write_mem(addr as usize, sr);
+}
 
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
