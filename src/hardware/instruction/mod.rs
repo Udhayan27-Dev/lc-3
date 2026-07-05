@@ -84,11 +84,11 @@ pub fn add(instr:u16,vm:&mut VM){
     let imm_flag = (instr >> 5) & 0x1;
     if imm_flag == 1 {
         let imm5 = sign_extend(instr & 0x1F,5);
-        let val:u32 = imm5 as u32 + vm.registers.get(sr1) as u32;
+        let val = imm5.wrapping_add(vm.registers.get(sr1));
         vm.registers.update(dr, val as u16);
     } else {
         let sr2 = instr & 0x7;
-        let val:u32 = vm.registers.get(sr1) as u32 + vm.registers.get(sr2) as u32;
+        let val = vm.registers.get(sr1).wrapping_add(vm.registers.get(sr2));
         vm.registers.update(dr, val as u16);        
     }
     vm.registers.update_cond(dr);
@@ -157,7 +157,7 @@ pub fn br(instr:u16,vm:&mut VM){
     let pc_off = sign_extend(instr & 0x1ff,9);
     let cond_flag = instr >> 9 & 0x7;
     if cond_flag & vm.registers.cond != 0 {
-        let val: u32= vm.registers.pc as u32 + pc_off as u32;
+        let val = vm.registers.pc.wrapping_add(pc_off);
         vm.registers.pc = val as u16;
     }
 }
@@ -196,7 +196,7 @@ pub fn jsr(instr: u16,vm:&mut VM){
     vm.registers.r7 = vm.registers.pc;
 
     if flag != 0{
-        let val:u32 = vm.registers.pc as u32+ pc_off as u32;
+        let val = vm.registers.pc.wrapping_add(pc_off);
         vm.registers.pc = val as u16;
     }
     else{
@@ -212,8 +212,8 @@ pub fn jsr(instr: u16,vm:&mut VM){
 pub fn ld(instr:u16,vm:&mut VM){
     let dr = (instr >> 9) & 0x7;
     let pc_off = sign_extend(instr & 0x1ff,9);
-    let mem:u32 = pc_off as u32 + vm.registers.pc as u32;
-    let value = vm.read_mem(mem as u16);
+    let mem = pc_off.wrapping_add(vm.registers.pc);
+    let value = vm.read_mem(mem);
     vm.registers.update(dr, value);
     vm.registers.update_cond(dr);
 }
@@ -228,8 +228,8 @@ pub fn ldr(instr: u16,vm: &mut VM) {
     let dr = (instr >> 9) & 0x7;
     let base = (instr >> 6) & 0x7;
     let pc_off = sign_extend(instr & 0x3f,6);
-    let val :u32 = vm.registers.get(base) as u32 + pc_off as u32;
-    let mem_value = vm.read_mem(val as u16);
+    let val = vm.registers.get(base).wrapping_add(pc_off);
+    let mem_value = vm.read_mem(val);
     vm.registers.update(dr, mem_value);
     vm.registers.update_cond(dr);
 }
