@@ -235,6 +235,19 @@ pub fn ldr(instr: u16,vm: &mut VM) {
 }
 
 
+/// "LEA" opcode
+///  15           12│11        9│8                                 0
+/// ┌───────────────┼───────────┼───────────────────────────────────┐
+/// │      1110     │     DR    │            PCOffset9              │
+/// └───────────────┴───────────┴───────────────────────────────────┘
+pub fn lea(instr: u16,vm:&mut VM){
+    let dr = (instr >> 9) & 0x7;
+    let pc_off = sign_extend(instr & 0x1ff, 9);
+    let ea: u32 = vm.registers.pc as u32 + pc_off as u32;
+    vm.registers.update(dr, ea as u16);
+    vm.registers.update_cond(dr);    
+}
+
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
     if(x >> (bit_count-1)) & 1 != 0 {
