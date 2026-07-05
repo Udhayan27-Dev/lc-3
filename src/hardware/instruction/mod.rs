@@ -219,6 +219,23 @@ pub fn ld(instr:u16,vm:&mut VM){
 }
 
 
+/// "LDR" opcode
+///  15           12│11        9│8             6│5                 0
+/// ┌───────────────┼───────────┼───────────────┼───────────────────┐
+/// │      1010     │     DR    │     BaseR     │     PCOffset6     │
+/// └───────────────┴───────────┴───────────────┴───────────────────┘
+pub fn ldr(instr: u16,vm: &mut VM) {
+    let dr = (instr >> 9) & 0x7;
+    let base = (instr >> 6) & 0x7;
+    let pc_off = sign_extend(instr & 0x3f,6);
+    let val :u32 = vm.registers.get(base) as u32 + pc_off as u32;
+    let mem_value = vm.read_mem(val as u16);
+    vm.registers.update(dr, mem_value);
+    vm.registers.update_cond(dr);
+}
+
+
+
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
     if(x >> (bit_count-1)) & 1 != 0 {
         x |= 0xFFFF << bit_count;        
