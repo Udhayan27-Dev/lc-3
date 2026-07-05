@@ -33,8 +33,8 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::JSR) => jsr(instr,vm),
         Some(Opcode::LD) => ld(instr,vm),
         Some(Opcode::LDI) => ldi(instr,vm),
-        // Some(Opcode::LDR) => ldr(),
-        // Some(Opcode::LEA) => lea(),
+        Some(Opcode::LDR) => ldr(instr,vm),
+        Some(Opcode::LEA) => lea(instr,vm),
         // Some(Opcode::ST) => st(),
         // Some(Opcode::STI) => sti(),
         // Some(Opcode::STR) => str(),
@@ -243,9 +243,21 @@ pub fn ldr(instr: u16,vm: &mut VM) {
 pub fn lea(instr: u16,vm:&mut VM){
     let dr = (instr >> 9) & 0x7;
     let pc_off = sign_extend(instr & 0x1ff, 9);
-    let ea: u32 = vm.registers.pc as u32 + pc_off as u32;
-    vm.registers.update(dr, ea as u16);
+    let ea = vm.registers.pc.wrapping_add(pc_off);
+    vm.registers.update(dr, ea);
     vm.registers.update_cond(dr);    
+}
+
+/// "STR" opcode
+///  15           12│11        9│8                                 0
+/// ┌───────────────┼───────────┼───────────────────────────────────┐
+/// │      0011     │     SR    │            PCOffset9              │
+/// └───────────────┴───────────┴───────────────────────────────────┘
+pub fn st(instr: u16,vm:&mut VM){
+    let sr = (instr >> 9) & 0x7;
+    let pc_off = sign_extend(instr & 0x1ff, 9);
+    let addr = vm.registers.pc.wrapping_add(pc_off);
+    vm.write_mem(addr as usize, vm.registers.get(sr));
 }
 
 
