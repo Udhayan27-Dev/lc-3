@@ -35,7 +35,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::LDI) => ldi(instr,vm),
         Some(Opcode::LDR) => ldr(instr,vm),
         Some(Opcode::LEA) => lea(instr,vm),
-        // Some(Opcode::ST) => st(),
+        Some(Opcode::ST) => st(instr,vm),
         // Some(Opcode::STI) => sti(),
         // Some(Opcode::STR) => str(),
         // Some(Opcode::TRAP) => trap(),
@@ -235,7 +235,7 @@ pub fn ldr(instr: u16,vm: &mut VM) {
 }
 
 
-/// "LEA" opcode
+/// "LEA"-> load effective address opcode
 ///  15           12│11        9│8                                 0
 /// ┌───────────────┼───────────┼───────────────────────────────────┐
 /// │      1110     │     DR    │            PCOffset9              │
@@ -259,6 +259,22 @@ pub fn st(instr: u16,vm:&mut VM){
     let addr = vm.registers.pc.wrapping_add(pc_off);
     vm.write_mem(addr as usize, vm.registers.get(sr));
 }
+
+
+/// "STI" Opcode
+///  15           12│11        9│8                                 0
+/// ┌───────────────┼───────────┼───────────────────────────────────┐
+/// │      1011     │     SR    │            PCOffset9              │
+/// └───────────────┴───────────┴───────────────────────────────────┘
+pub fn sti(instr: u16,vm:&mut VM){
+    let sr = (instr >> 9) & 0x7;
+    let pc_off = sign_extend(instr & 0x1ff, 9);
+    let addr = vm.registers.pc.wrapping_add(pc_off);
+    let val = vm.read_mem(addr);
+    vm.write_mem(val as usize, vm.registers.get(sr));
+    
+}
+
 
 
 pub fn sign_extend(mut x:u16,bit_count:u8) -> u16 {
