@@ -21,6 +21,22 @@ pub enum Opcode {
     TRAP,    
 }
 
+pub enum TrapCode{
+    ///get character from keyboard
+    Getc = 0x20,
+    ///output a character
+    Out = 0x21,
+    ///output a word string
+    Puts = 0x22,
+    ///input a string
+    In = 0x23,
+    ///output a byte string
+    Putsp = 0x24,
+    ///Halt the program
+    Halt = 0x25,
+}
+
+
 pub fn exec_instr(instr:u16,vm:&mut VM){
     let op_code = get_op_code(&instr);
 
@@ -287,6 +303,11 @@ pub fn str(instr:u16,vm: &mut VM){
     let pc_off = sign_extend(instr & 0x3f, 6);
     let addr = vm.registers.get(base_r).wrapping_add(pc_off);
     vm.write_mem(addr as usize, sr);
+}
+
+
+pub fn trap(instr: u16,vm:&mut VM){
+    
 }
 
 
