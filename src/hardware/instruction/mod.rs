@@ -1,3 +1,5 @@
+use std::{io::{self, Read, Write}, process};
+
 use super::vm::VM;
 
 // use std::{io::{Read,Write},process};
@@ -54,7 +56,7 @@ pub fn exec_instr(instr:u16,vm:&mut VM){
         Some(Opcode::ST) => st(instr,vm),
         Some(Opcode::STI) => sti(instr,vm),
         Some(Opcode::STR) => str(instr,vm),
-        // Some(Opcode::TRAP) => trap(),
+        Some(Opcode::TRAP) => trap(instr,vm),
         _ => {}
     }
 
@@ -307,7 +309,65 @@ pub fn str(instr:u16,vm: &mut VM){
 
 
 pub fn trap(instr: u16,vm:&mut VM){
-    
+    match instr & 0xff{
+        0x20 => {
+            //Get character
+            let mut buffer = [0;1];
+            std::io::stdin().read_exact(&mut buffer).unwrap();
+            vm.registers.r0 = buffer[0] as u16;
+        }
+        0x21 => {
+            //write a character
+            let c = vm.registers.r0 as u8;
+            print!("{}", c as char);
+        }
+        0x22 => {
+            //puts
+            let mut index = vm.registers.r0;
+            let mut c = vm.read_mem(index);
+            while c != 0x0000{
+                print!("{}",(c as u8) as char);
+                index +=1;
+               c = vm.read_mem(index); 
+            }
+            io::stdout().flush().expect("failed to flush");
+        }
+        0x23 => {
+            print!("Enter a character : ");
+            io::stdout().flush().expect("failed to flush");
+            let char = std::io::stdin()
+                .bytes()
+                .next()
+                .and_then(|result| result.ok())
+                .map(|byte| byte as u16)
+                .unwrap();
+            vm.registers.update(0, char);
+        }
+        0x24 => {
+            //putsp
+            let mut index = vm.registers.r0;
+            let mut c = vm.read_mem(index);
+            while c != 0x0000{
+                let c1 = ((c & 0xFF) as u8) as char;
+                print!("{}",c1);
+                let c2 = ((c >> 8)as u8) as char;
+                if c2 != '\0' {
+                    print!("{}",c2);
+                }
+                index += 1;
+                c = vm.read_mem(index);
+            }
+            io::stdout().flush().expect("failed to flush");
+        }
+        0x25 => {
+            println!("HALT detected");
+            io::stdout().flush().expect("failed to flush");
+            process::exit(1);
+        }
+        _ => {
+            process::exit(1);
+        }
+    }
 }
 
 
