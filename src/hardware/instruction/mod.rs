@@ -2,7 +2,7 @@ use std::{io::{self, Read, Write}, process};
 
 use super::vm::VM;
 
-// use std::{io::{Read,Write},process};
+
 
 pub enum Opcode {
     BR = 0,
@@ -333,6 +333,7 @@ pub fn trap(instr: u16,vm:&mut VM){
             io::stdout().flush().expect("failed to flush");
         }
         0x23 => {
+            //gets
             print!("Enter a character : ");
             io::stdout().flush().expect("failed to flush");
             let char = std::io::stdin()
@@ -360,6 +361,7 @@ pub fn trap(instr: u16,vm:&mut VM){
             io::stdout().flush().expect("failed to flush");
         }
         0x25 => {
+            //halt process 
             println!("HALT detected");
             io::stdout().flush().expect("failed to flush");
             process::exit(1);

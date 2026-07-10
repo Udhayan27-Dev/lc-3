@@ -5,3 +5,7 @@ edition = "2024"
 
 [dependencies]
 byteorder = "1.5.0"
+structopt = "0.3.26"
+termios = "0.3.3"
+
+
