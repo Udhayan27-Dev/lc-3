@@ -29,6 +29,9 @@ impl VM{
     }
 
     pub fn read_mem(&mut self, address: u16) -> u16 {
+        if address == MemmoryMappedReg::Kbsr as u16 {
+            self.handle_keyboard();
+        }
         self.memory[address as usize]
     }
 
