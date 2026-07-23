@@ -55,3 +55,6 @@ fn main() {
     //reset the stdin fd to termios data
     tcsetattr(stdin, TCSANOW, &termios).unwrap();
 }
+
+
+//cargo run example/test.obj
